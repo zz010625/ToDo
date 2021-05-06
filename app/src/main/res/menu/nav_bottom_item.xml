@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/taskFragment"
+        android:title="任务"
+        android:icon="@mipmap/ic_task" />
+    <item android:id="@+id/calendarFragment"
+        android:title="日历"
+        android:icon="@mipmap/ic_calendar"/>
+    <item android:id="@+id/loginFragment"
+        android:title="个人中心"
+        android:icon="@mipmap/ic_user"/>
+</menu>
