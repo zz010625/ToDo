@@ -43,5 +43,9 @@ SQL databinding livedata navigation Glide PickerView 简单的动画 MVVM
 
 定时推送用AlarmManager
 
-  
+## BUG
+
+邮件发的 APK 存在对总任务栏中任务进行操作闪退的bug 因为一开始就没打算让用户在总任务栏对任务数据进行修改 
+
+目前最新上传的/app文件夹 中的安装包已经禁止了对总任务栏中任务数据的修改
 
