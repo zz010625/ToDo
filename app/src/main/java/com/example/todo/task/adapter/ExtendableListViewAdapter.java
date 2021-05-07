@@ -267,70 +267,73 @@ public class ExtendableListViewAdapter extends BaseExpandableListAdapter {
         holder.taskLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                View view = LayoutInflater.from(context).inflate(R.layout.item_add_task_dialog, null);
-                EditText taskNameEditText = view.findViewById(R.id.et_task_group_name);
-                EditText taskStartTimeEditText = view.findViewById(R.id.et_start_time);
-                EditText taskEndTimeEditText = view.findViewById(R.id.et_end_time);
-                TextView determine = view.findViewById(R.id.tv_determine);
-                TextView cancel = view.findViewById(R.id.tv_cancel);
-               Dialog dialog= taskFragment.buildTaskDialog(view,taskStartTimeEditText,taskEndTimeEditText);
-                //填充原来的信息
-                taskNameEditText.setText(task.getTaskName());
-                taskEndTimeEditText.setText(task.getEndTime());
-                taskStartTimeEditText.setText(task.getStartTime());
+                if (groupPosition != getGroupCount() - 1) {//非总任务组
+                    View view = LayoutInflater.from(context).inflate(R.layout.item_add_task_dialog, null);
+                    EditText taskNameEditText = view.findViewById(R.id.et_task_group_name);
+                    EditText taskStartTimeEditText = view.findViewById(R.id.et_start_time);
+                    EditText taskEndTimeEditText = view.findViewById(R.id.et_end_time);
+                    TextView determine = view.findViewById(R.id.tv_determine);
+                    TextView cancel = view.findViewById(R.id.tv_cancel);
+                    Dialog dialog= taskFragment.buildTaskDialog(view,taskStartTimeEditText,taskEndTimeEditText);
+                    //填充原来的信息
+                    taskNameEditText.setText(task.getTaskName());
+                    taskEndTimeEditText.setText(task.getEndTime());
+                    taskStartTimeEditText.setText(task.getStartTime());
 
-                //点击确定
-                determine.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        //若三个输入框都不为空 才可添加任务
-                        if (!TextUtils.isEmpty(taskNameEditText.getText()) && !TextUtils.isEmpty(taskStartTimeEditText.getText()) && !TextUtils.isEmpty(taskEndTimeEditText.getText())) {
-                            //判断时间格式是否设置正确
-                            Log.d("zz",TimeUtil.INSTANCE.getMaxTime(
-                                    taskStartTimeEditText.getText().toString(),
-                                    taskEndTimeEditText.getText().toString()
-                                    )
-                            );
-                            if (TimeUtil.INSTANCE.getMaxTime(
-                                    taskStartTimeEditText.getText().toString(),
-                                    taskEndTimeEditText.getText().toString()
-                            ) .equals(taskEndTimeEditText.getText().toString())
-                            ) {
-                                //修改集合中任务信息
-                                task.setTaskName(taskNameEditText.getText().toString());
-                                task.setStartTime(taskStartTimeEditText.getText().toString());
-                                task.setEndTime(taskEndTimeEditText.getText().toString());
-                                ContentValues values =new ContentValues();
-                                values.put("taskName",task.getTaskName());
-                                values.put("startTime",task.getStartTime());
-                                values.put("endTime",task.getEndTime());
+                    //点击确定
+                    determine.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            //若三个输入框都不为空 才可添加任务
+                            if (!TextUtils.isEmpty(taskNameEditText.getText()) && !TextUtils.isEmpty(taskStartTimeEditText.getText()) && !TextUtils.isEmpty(taskEndTimeEditText.getText())) {
+                                //判断时间格式是否设置正确
+                                Log.d("zz",TimeUtil.INSTANCE.getMaxTime(
+                                        taskStartTimeEditText.getText().toString(),
+                                        taskEndTimeEditText.getText().toString()
+                                        )
+                                );
+                                if (TimeUtil.INSTANCE.getMaxTime(
+                                        taskStartTimeEditText.getText().toString(),
+                                        taskEndTimeEditText.getText().toString()
+                                ) .equals(taskEndTimeEditText.getText().toString())
+                                ) {
+                                    //修改集合中任务信息
+                                    task.setTaskName(taskNameEditText.getText().toString());
+                                    task.setStartTime(taskStartTimeEditText.getText().toString());
+                                    task.setEndTime(taskEndTimeEditText.getText().toString());
+                                    ContentValues values =new ContentValues();
+                                    values.put("taskName",task.getTaskName());
+                                    values.put("startTime",task.getStartTime());
+                                    values.put("endTime",task.getEndTime());
 
-                                //回调修改数据库中任务信息
-                                taskFragment.changeTaskData(task.getBelongingToTaskGroupName(),childPosition,values);
-                                dialog.dismiss();
+                                    //回调修改数据库中任务信息
+                                    taskFragment.changeTaskData(task.getBelongingToTaskGroupName(),childPosition,values);
+                                    dialog.dismiss();
+                                } else {
+                                    ToastUtil.INSTANCE.showMsg(context, "时间设置不正确!");
+
+                                }
+
                             } else {
-                                ToastUtil.INSTANCE.showMsg(context, "时间设置不正确!");
-
+                                ToastUtil.INSTANCE.showMsg(context, "请完整填写信息!");
                             }
 
-                        } else {
-                            ToastUtil.INSTANCE.showMsg(context, "请完整填写信息!");
+
+                            //刷新数据
+                            notifyDataSetChanged();
                         }
+                    });
+                    //取消的点击事件
+                    cancel.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            dialog.dismiss();
+                        }
+                    });
+                    } else {
+                    ToastUtil.INSTANCE.showMsg(context,"请到具体任务组中操作!");
+                }
 
-                        Log.d("zzz",cancel.toString());
-
-
-                        //刷新数据
-                        notifyDataSetChanged();
-                    }
-                });
-                //取消的点击事件
-                cancel.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        dialog.dismiss();
-                    }
-                });
             }
         });
 
@@ -338,13 +341,18 @@ public class ExtendableListViewAdapter extends BaseExpandableListAdapter {
         holder.delete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ObjectAnimator moveX =
-                        ObjectAnimator.ofFloat(finalConvertView, "translationX", -1500f);
-                AnimatorSet animatorSet = new AnimatorSet();
-                animatorSet.play(moveX);
-                animatorSet.start();
-                //回调删除List以及数据库中任务
-                taskFragment.deleteTask(groupPosition, childPosition);
+                if (groupPosition != getGroupCount() - 1) {//非总任务组
+                    ObjectAnimator moveX =
+                            ObjectAnimator.ofFloat(finalConvertView, "translationX", -1500f);
+                    AnimatorSet animatorSet = new AnimatorSet();
+                    animatorSet.play(moveX);
+                    animatorSet.start();
+                    //回调删除List以及数据库中任务
+                    taskFragment.deleteTask(groupPosition, childPosition);
+                }else {
+                    ToastUtil.INSTANCE.showMsg(context,"请到具体任务组中操作!");
+                }
+
             }
         });
 
